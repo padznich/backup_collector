@@ -18,7 +18,7 @@ from itertools import groupby
 from shutil import copy2
 
 
-BASE_DIR = '/var/cbackup/storage'
+BASE_DIR = '/tmp/storage'
 
 
 def add_directory(root_path, name):
@@ -80,14 +80,17 @@ def get_backups(backup_paths, search_func):
     :return: [LIST].
     """
     backups_dict = {}
-    for file_path in backup_paths:
-        file_name = file_path.split('/')[-1]
-        file_name_splited = file_name.split('_')
+    try:
+        for file_path in backup_paths:
+            file_name = file_path.split('/')[-1]
+            file_name_splited = file_name.split('_')
 
-        if file_name_splited[1] not in backups_dict:
-            backups_dict[file_name_splited[1]] = [file_name_splited[0]]
-        else:
-            backups_dict[file_name_splited[1]].append(file_name_splited[0])
+            if file_name_splited[1] not in backups_dict:
+                backups_dict[file_name_splited[1]] = [file_name_splited[0]]
+            else:
+                backups_dict[file_name_splited[1]].append(file_name_splited[0])
+    except IndexError as ex:
+        print 'Error\t', ex.message, 'for', file_path
 
     result = []
     for k, v in backups_dict.items():
@@ -117,7 +120,7 @@ def retrieve_full_backups(backup_names):
                 # add full backup
                 result.append(i)
             else:
-                print 'Skip increment backup\t', i  # log
+                print 'Skipped. Increment backup\t', i  # log
         # not increment backups
         else:
             result.append(i)
@@ -153,16 +156,18 @@ def normalize_storage(path, level=0, server_name=None):
             if server_files:
 
                 # copy to monthly folder
-                print '\t\t-= Copy monthly backups =-'  # log
+                print '\t\t-= Copy monthly backups for {} =-'.format(server_name)  # log
                 monthly_backups = [
                     os.path.join(child_path, backup) for backup in retrieve_full_backups(server_files)]
                 copy_backups(monthly_backups, server_name, 'monthly')
+                print ''  # log
 
                 # copy to yearly folder
-                print '\t\t-= Copy yearly backups =-'  # log
+                print '\t\t-= Copy yearly backups for {} =-'.format(server_name)  # log
                 yearly_backups = [
                     os.path.join(child_path, backup) for backup in get_backups(monthly_backups, find_max_date_in_year)]
                 copy_backups(yearly_backups, server_name, 'yearly')
+                print ''  # log
 
         if not os.path.isdir(child_path):
             files.append(child_path)
