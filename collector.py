@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 """
 cbackup collector
@@ -31,7 +31,7 @@ def add_directory(root_path, name):
     folder_path = os.path.join(root_path, name)
     try:
         os.mkdir(folder_path)
-    except FileExistsError:
+    except OSError:
         # print('{} already exists'.format(folder_path))
         pass
 
@@ -49,7 +49,7 @@ def find_max_date_in_month(dates_list):
         if last_date[5:7] < current_month:
             result.append(last_date)
         else:
-            print('Skipped. Date from current month for "find_max_date_in_month":', last_date)
+            print 'Skipped. Date from current month for "find_max_date_in_month":', last_date
 
     return result
 
@@ -67,7 +67,7 @@ def find_max_date_in_year(dates_list):
         if last_date[:4] < current_year:
             result.append(last_date)
         else:
-            print('Skipped. Date from current year for "find_max_date_in_year":', last_date)
+            print 'Skipped. Date from current year for "find_max_date_in_year":', last_date
 
     return result
 
@@ -117,7 +117,7 @@ def retrieve_full_backups(backup_names):
                 # add full backup
                 result.append(i)
             else:
-                print('Skip increment backup\t', i)  # log
+                print 'Skip increment backup\t', i  # log
         # not increment backups
         else:
             result.append(i)
@@ -127,7 +127,7 @@ def retrieve_full_backups(backup_names):
 def copy_backups(data, server_name, folder):
     backup_dst = os.path.join(BASE_DIR, server_name, folder)
     for backup_src in data:
-        print(backup_src, backup_dst)  # log
+        print backup_src, backup_dst  # log
         copy2(backup_src, backup_dst)
 
 
@@ -153,13 +153,13 @@ def normalize_storage(path, level=0, server_name=None):
             if server_files:
 
                 # copy to monthly folder
-                print('\t\t-= Copy monthly backups =-')  # log
+                print '\t\t-= Copy monthly backups =-'  # log
                 monthly_backups = [
                     os.path.join(child_path, backup) for backup in retrieve_full_backups(server_files)]
                 copy_backups(monthly_backups, server_name, 'monthly')
 
                 # copy to yearly folder
-                print('\t\t-= Copy yearly backups =-')  # log
+                print '\t\t-= Copy yearly backups =-'  # log
                 yearly_backups = [
                     os.path.join(child_path, backup) for backup in get_backups(monthly_backups, find_max_date_in_year)]
                 copy_backups(yearly_backups, server_name, 'yearly')
